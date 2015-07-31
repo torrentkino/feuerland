@@ -1,0 +1,10 @@
+/etc/feuerland/README
+/etc/feuerland/desktop.json
+/etc/feuerland/dnsserver.json
+/etc/feuerland/webserver.json
+/etc/perl/feuerland/complex.pm
+/etc/perl/feuerland/country.pm
+/etc/perl/feuerland/import.pm
+/etc/perl/feuerland/misc.pm
+/etc/perl/feuerland/simple.pm
+/etc/perl/feuerland/std.pm

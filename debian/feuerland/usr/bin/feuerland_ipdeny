@@ -1,0 +1,26 @@
+#!/usr/bin/perl -w
+use strict;
+use lib '/usr/share/perl5';
+use feuerland::import;
+use Getopt::Long;
+
+sub main {
+	#local $/;
+	my ( $opt_list, $opt_help, $opt_file, $country );
+
+	GetOptions(
+		"d=s" => \$country,
+		"h" => \$opt_help,
+		"o" => \$opt_file )
+	or die "Error in command line arguments\n";
+
+	feuerland::import::print_help_ipdeny( $opt_help );
+
+	my $cidr = feuerland::import::download_ipdeny( $country );
+	my $json = feuerland::import::json_converter( $cidr );
+
+	feuerland::import::print_stdout( $json, $opt_file );
+	feuerland::import::print_file( $json, uc($country), $opt_file );
+}
+
+main();

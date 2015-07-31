@@ -1,0 +1,272 @@
+#!/usr/bin/perl -w
+use strict;
+use Net::IP;
+use feuerland::misc;
+use Getopt::Long;
+
+sub lookup($$$) {
+	my $cache = shift;
+	my $input = shift;
+	my $opt_dns = shift;
+	my $hostname = "unknown";
+
+	# No DNS lookups
+	return $input if( $opt_dns );
+
+	if ( $input !~ m/^\d+\.\d+\.\d+\.\d+$/ ) {
+		return $input;
+	}
+
+	if ( !$cache->{$input} )	{
+		eval {
+			($hostname) = gethostbyaddr(pack('C4',split('\.',$input)),2);
+		};
+
+		if ( $@ || !$hostname )	{
+			$cache->{$input} = $input;
+		} else {
+			$cache->{$input} = $hostname;
+		}
+	}
+
+	return lc($cache->{$input});
+}
+
+sub ip_shortener($) {
+	my $ip = shift;
+
+	if( feuerland::misc::isValidIPv6($ip) ) {
+		my $obj = new Net::IP ($ip) or die (Net::IP::Error());
+		$ip = "[".$obj->short."]";
+	}
+
+	return $ip;
+}
+
+sub parse($$) {
+	my $level1 = shift;
+	my $line = shift;
+	my $buffer = "";
+	my $ip;
+
+	if ( $line !~ m/DST=/ || $line !~ m/SRC=/ || $line !~ m/PROTO=/ ) {
+		return;
+	}
+
+	# FIXME: Too many false positives
+	if ( $line =~ m/INVALID/ || $line =~ m/TYPE=3 CODE=13/ || $line =~ m/TYPE=3 CODE=3/ ) {
+		return;
+	}
+
+	$line =~ s/\n//g;
+
+	# Debian Timestamp...
+	$line =~ s/\[\S+\]//g;
+
+	# ICMP additional informations
+	$line =~ s/\[.+\]//g;
+
+	# Remove some log timestamp types
+	$line =~ s/^\S+\s+\d+\s+\d+:\d+:\d+ //; # Classic
+	$line =~ s/^\d+-\d+-\d+T\d+:\d+:\S+ //; # ISO
+
+	# Remove host
+	$line =~ s/^\S+\s+//;
+
+	# Debian...
+	$line =~ s/^kernel:\s+//;
+
+	# Tag
+	my $tag = $line;
+	$tag =~ s/^(.+) IN=.+/$1/;
+
+	# Interfaces
+	my $dev_in = $line;
+	$dev_in =~ s/.+\s+IN=(\S*)\s+.+/$1/;
+
+	my $dev_out = $line;
+	$dev_out =~ s/.+\s+OUT=(\S*)\s+.+/$1/;
+
+	$ip = $line;
+	$ip =~ s/.+DST=(\S+) .+/$1/;
+	my $dst = ip_shortener($ip);
+
+	$ip = $line;
+	$ip =~ s/.+SRC=(\S+) .+/$1/;
+	my $src = ip_shortener($ip);
+
+	my $proto = $line;
+	$proto =~ s/.+PROTO=(\S+)\s*.*/$1/;
+
+	my $dpt = $line;
+	$dpt =~ s/.+DPT=(\S+) .+/$1/;
+
+	my $spt = $line;
+	$spt =~ s/.+SPT=(\S+) .+/$1/;
+
+	my $type = $line;
+	$type =~ s/.+TYPE=(\d+) .+/$1/;
+
+	my $code = $line;
+	$code =~ s/.+CODE=(\d+).*/$1/;
+
+	if ( $proto eq "TCP" && $line =~ m/ SYN / ) {
+		$buffer = sprintf "%s\t%s\ttcp://%s:%i", $tag, $src, $dst, $dpt;
+	} elsif ( $proto eq "UDP" ) {
+		$buffer = sprintf "%s\t%s\tudp://%s:%i", $tag, $src, $dst, $dpt;
+	} elsif ( $proto eq "ICMP" ) {
+		$buffer = sprintf "%s\t%s\ticmp://%s:%i:%i", $tag, $src, $dst, $type, $code;
+	} elsif ( $proto eq "ICMPv6" ) {
+		$buffer = sprintf "%s\t%s\ticmpv6://%s:%i:%i", $tag, $src, $dst, $type, $code;
+	} elsif ( $proto eq "2" ) {
+		$buffer = sprintf "%s\t%s\tigmp://%s", $tag, $src, $dst;
+	}
+
+	if ( length($buffer) == 0 ) {
+		return;
+	}
+
+	# Input, Output or Forward
+	my $key = "";
+	if( scalar length $dev_in > 0 && scalar length $dev_out > 0 ) {
+		$key = "$dev_in -> $dev_out";
+	} elsif( scalar length $dev_in > 0 && scalar length $dev_out == 0 ) {
+		$key = "in:$dev_in";
+	} elsif( scalar length $dev_in == 0 && scalar length $dev_out > 0 ) {
+		$key = "out:$dev_out";
+	} else {
+		die "No devices fount?!\n";
+	}
+
+	if( ! defined $level1->{$key} ) {
+		my %level2;
+		$level1->{$key} = \%level2;
+	}
+
+	if ( $level1->{$key}->{$buffer} ) {
+		$level1->{$key}->{$buffer} += 1;
+	} else {
+		$level1->{$key}->{$buffer} = 1;
+	}
+}
+
+sub size_counter($$$$$) {
+	my $level1 = shift;
+	my $size = shift;
+	my $opt_count = shift;
+	my $opt_dns = shift;
+	my $cache = shift;
+	my $count = 0;
+
+	$size->{'host'} = 1;
+	$size->{'tag'} = 1;
+	$size->{'count'} = 1;
+
+	foreach my $key ( keys %{$level1} ) {
+		my $level2 = $level1->{$key};
+
+		foreach my $buffer ( sort { $level2->{$b} <=> $level2->{$a} } keys %{$level2} ) {
+
+			# Limit number of output lines
+			if ( defined $opt_count ) {
+				last if( ++$count > $opt_count )
+			}
+
+	        my ( $tag, $src, $dst ) = split(/\t/, $buffer);
+			my $hostname = lookup( $cache, $src, $opt_dns );
+
+	        if( $size->{'host'} < length( $hostname ) ) {
+	            $size->{'host'} = length( $hostname );
+	        }
+	        if ($size->{'tag'} < length($tag)) {
+	            $size->{'tag'} = length($tag);
+	        }
+			if ($size->{'count'} < length($level2->{$buffer})) {
+				$size->{'count'} = length($level2->{$buffer});
+			}
+		}
+
+		# Reset counter
+		$count = 0;
+	}
+}
+
+sub print_result($$$$$) {
+	my $level1 = shift;
+	my $size = shift;
+	my $opt_count = shift;
+	my $opt_dns = shift;
+	my $cache = shift;
+	my $buffer;
+	my $count = 0;
+
+	foreach my $key ( sort keys %{$level1} ) {
+		my $level2 = $level1->{$key};
+
+		print "# ".$key."\n";
+
+		foreach $buffer (sort { $level2->{$b} <=> $level2->{$a} } keys %{$level2} ) {
+
+			# Limit number of output lines
+			if ( defined $opt_count ) {
+				last if( ++$count > $opt_count )
+			}
+
+			my ( $tag, $src, $dst ) = split( /\t/, $buffer );
+			printf "  %".$size->{'count'}."sx %-".$size->{'tag'}."s:  %".$size->{'host'}."s -> %s\n",
+					$level2->{$buffer}, $tag,
+					lookup( $cache, $src, $opt_dns),
+					lookup( $cache, $dst, $opt_dns);
+		}
+
+		# Reset counter
+		$count = 0;
+
+		print "\n";
+	}
+
+	print "\n";
+
+}
+
+sub print_help() {
+	print <<EOF
+$0 -h => Help
+$0 -n => No DNS lookups
+$0 -c number => Number of output lines (Per interface)
+EOF
+;
+	exit(0);
+}
+
+sub main {
+	my %cache;
+	my %level1;
+	my %size;
+	my $opt_dns = '';
+	my $opt_count;
+	my $help = '';
+
+	GetOptions(
+		"n" => \$opt_dns,
+		"c:i" => \$opt_count,
+		"h" => \$help )
+	or die "Error in command line arguments\n";
+
+	print_help() if( $help );
+
+	while( <STDIN> ) {
+		parse(\%level1, $_);
+	}
+
+	if( scalar keys %level1 == 0 ) {
+		exit;
+	}
+
+	print "# ".$0."\n\n";
+
+	size_counter( \%level1, \%size, $opt_count, $opt_dns, \%cache );
+	print_result( \%level1, \%size, $opt_count, $opt_dns, \%cache );
+}
+
+main();

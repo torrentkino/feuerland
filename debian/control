@@ -1,0 +1,12 @@
+Source: feuerland
+Section: net
+Priority: extra
+Maintainer: Aiko Barz <aiko@torrentkino.de>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+Homepage: https://github.com/torrentkino/feuerland
+
+Package: feuerland
+Architecture: any
+Depends: ${perl:Depends}, ${misc:Depends}, iptables, ipset, libnet-ipv6addr-perl, libnet-patricia-perl, libregexp-ipv6-perl, libjson-perl, libnet-ip-perl
+Description: Geoblocking for Desktops and Servers

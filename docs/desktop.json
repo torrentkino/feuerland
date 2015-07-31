@@ -1,0 +1,30 @@
+{
+	"dir": "/usr/share/feuerland",
+	"policy": {
+		"input": "deny",
+		"output": "accept"
+	},
+	"log": [
+		"deny"
+	],
+	"rules": {
+		"output": {
+			"tcp": {
+				"80": {
+					"policy": "accept",
+					"except": [
+						"iblocklist/Bluetack_ads",
+						"iblocklist/Bluetack_spyware"
+					]
+				},
+				"443": {
+					"policy": "accept",
+					"except": [
+						"iblocklist/Bluetack_ads",
+						"iblocklist/Bluetack_spyware"
+					]
+				}
+			}
+		}
+	}
+}

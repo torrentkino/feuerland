@@ -1,0 +1,47 @@
+#!/usr/bin/perl -w
+use strict;
+use lib '/usr/share/perl5';
+use feuerland::misc;
+use feuerland::std;
+use feuerland::simple;
+use feuerland::complex;
+
+sub main() {
+	my %fw = (
+		'4' => "/sbin/iptables",
+		'6' => "/sbin/ip6tables",
+	);
+	my %exe = (
+		'fw' => \%fw,
+		'ips' => "/sbin/ipset",
+	);
+	my $file = "/etc/feuerland/config.json";
+	my %id_cache;
+
+	feuerland::misc::check_exe( $exe{'fw'}->{'4'} );
+	feuerland::misc::check_exe( $exe{'fw'}->{'6'} );
+	feuerland::misc::check_exe( $exe{'ips'} );
+
+	my $conf = feuerland::misc::load_json( $file );
+	my $interfaces = feuerland::misc::find_net_dev();
+
+	feuerland::std::reset_chain( \%exe );
+	feuerland::std::reset_ipset( \%exe );
+
+	my $ipset = feuerland::complex::ipset_load( $conf, \%id_cache );
+	feuerland::complex::ipset_print( \%exe, $ipset );
+
+	feuerland::simple::established( \%exe );
+	feuerland::simple::lo( \%exe );
+	feuerland::simple::ipv6_neighbourhood( \%exe );
+	feuerland::simple::multicast( \%exe );
+	feuerland::simple::broadcast( \%exe );
+	feuerland::simple::ipv6_weird( \%exe );
+	feuerland::simple::icmp( \%exe );
+	feuerland::complex::chain( \%exe, $ipset, $conf, \%id_cache, 4 );
+	feuerland::complex::chain( \%exe, $ipset, $conf, \%id_cache, 6 );
+	feuerland::simple::final( \%exe, $conf, "OUTPUT" );
+	feuerland::simple::final( \%exe, $conf, "INPUT" );
+}
+
+main();
