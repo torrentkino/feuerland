@@ -17,9 +17,9 @@ or
 Usage
 -----
 
-Go to /etc/feuerland and copy one of the examples to /etc/feuerland/config.json
-Run `feuerland`. The firewall script gets printed to stdout.
-Run `sudo feuerland | sudo bash` to install the script.
-Run `dmesg | feuerlog -n` to see what is going on.
-Use `feuerland_iblocklist` and `feuerland_ipdeny` to download newer CIDR-lists.
+* Go to /etc/feuerland and copy one of the examples to /etc/feuerland/config.json
+* Run `feuerland`. The firewall script gets printed to stdout.
+* Run `sudo feuerland | sudo bash` to install the script.
+* Run `dmesg | feuerlog -n` to see what is going on.
+* Use `feuerland_iblocklist` and `feuerland_ipdeny` to download newer blocklists.
 
