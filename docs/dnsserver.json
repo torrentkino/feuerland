@@ -10,12 +10,16 @@
 	"rules": {
 		"input": {
 			"tcp": {
+				"53": {
+					"policy": "accept"
+				},
 				"22": {
 					"policy": "deny",
 					"except": [ "rfc1918", "ipdeny/DE" ]
 				},
-				"53": {
-					"policy": "accept"
+				"443": {
+					"policy": "deny",
+					"except": [ "rfc1918", "ipdeny/DE" ]
 				}
 			},
 			"udp": {

@@ -8,6 +8,13 @@
 		"deny"
 	],
 	"rules": {
+		"input": {
+			"tcp": {
+				"22": {
+					"policy": "deny",
+					"except": [ "rfc1918" ]
+				}
+		},
 		"output": {
 			"tcp": {
 				"80": {
