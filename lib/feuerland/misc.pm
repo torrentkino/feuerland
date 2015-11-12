@@ -5,6 +5,7 @@ use Net::IP;
 use Regexp::IPv6 qw($IPv6_re);
 use Net::CIDR::Lite;
 use Socket;
+use JSON;
 
 sub print($) {
 	my $words = shift;

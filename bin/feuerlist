@@ -1,0 +1,99 @@
+#!/usr/bin/perl -w
+use strict;
+use Getopt::Long;
+use lib '/usr/share/perl5';
+use feuerland::misc;
+use feuerland::std;
+
+sub help() {
+	print <<EOF
+
+Usage: $0 IPDENY/de IPDENY/jp
+	--target (apache22|apache24) \\
+EOF
+;
+	exit 1;
+}
+
+sub list($) {
+	my $conf = shift;
+	my( %big4, %big6 );
+	my $buffer = "";
+
+	foreach my $name (@ARGV) {
+		my ( $list4, $list6 ) = feuerland::misc::load_list( $conf, $name );
+
+		# IPv4
+		foreach my $cidr ( @{ $list4 } ) {
+			next if( defined $big4{ $cidr } );
+			$big4{ $cidr } = 1;
+		}
+
+		# IPv6
+		foreach my $cidr ( @{ $list6 } ) {
+			next if( defined $big6{ $cidr } );
+			$big6{ $cidr } = 1;
+		}
+	}
+
+	foreach my $cidr ( sort keys %big4 ) {
+		$buffer .= "$cidr ";
+	}
+
+	foreach my $cidr ( sort keys %big6 ) {
+		$buffer .= "$cidr ";
+	}
+
+	$buffer =~ s/\s*$/\n/;
+
+	print $buffer;
+}
+
+sub apache24($) {
+	my $conf = shift;
+
+	print "#\t<Location />\n";
+	print "#\t\tRequire all denied\n";
+	print "#\t\tRequire ip ";
+
+	list( $conf );
+
+	print "#\t</Location>\n";
+}
+
+
+sub apache22($) {
+	my $conf = shift;
+
+	print "<Location />\n";
+	print "\tOrder allow,deny\n";
+	print "\tallow from ";
+
+	list( $conf );
+
+	print "</Location>\n";
+}
+
+sub main() {
+	return if( ! @ARGV );
+	my %conf;
+	my $target;
+	my %type = (
+		'apache22' => 1,
+		'apache24' => 1,
+	);
+
+	GetOptions ("target=s" => \$target)
+		or help();
+
+	help() if( !defined $target );
+	help() if( !defined $type{$target} );
+
+	if( $target eq "apache22" ) {
+		apache22( \%conf );
+	} elsif( $target eq "apache24" ) {
+		apache24( \%conf );
+	}
+}
+
+main();
