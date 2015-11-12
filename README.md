@@ -1,25 +1,26 @@
-Feuerland
-=========
+feuerland(1) -- Botnet Defense
+==============================
 
-* Status: Proof of concept
+## DESCRIPTION
 
-Installation
-------------
+	* Status: Proof of concept
 
-* apt-get install iptables ipset libnet-ipv6addr-perl libnet-patricia-perl libregexp-ipv6-perl libjson-perl libnet-ip-perl
-* sudo make install # Just a bunch of copy statements
+## INSTALLATION
 
-or
+	* apt-get install iptables ipset libnet-ipv6addr-perl libnet-patricia-perl libregexp-ipv6-perl libjson-perl libnet-ip-perl
+	* sudo make install # Just a bunch of copy statements
 
-* make debian # This command creates an installable package for Debian
-* make ubuntu # This command creates an installable package for Ubuntu
+Or
 
-Usage
------
+	* make debian # This command creates an installable package for Debian
+	* make ubuntu # This command creates an installable package for Ubuntu
 
-* Go to /etc/feuerland and copy one of the examples to /etc/feuerland/config.json
-* Run `feuerland`. The firewall script gets printed to stdout.
-* Run `sudo feuerland | sudo bash` to install the script.
-* Run `dmesg | feuerlog -n` to see what is going on.
-* Use `feuerland_iblocklist` and `feuerland_ipdeny` to download newer blocklists.
+## USAGE
+
+	* Go to /etc/feuerland and copy one of the examples to /etc/feuerland/config.json
+	* Run `feuerland`. The firewall script gets printed to stdout.
+	* Run `sudo feuerland | sudo bash` to install the script.
+	* Run `dmesg | feuerlog -n` to see what is going on.
+	* Use `feuerland_iblocklist` and `feuerland_ipdeny` to download newer blocklists.
+	* Use `feuerlist --target apache24 ipdeny/DE rfc1918 localhost` to create an Apache-2.4 ACL
 

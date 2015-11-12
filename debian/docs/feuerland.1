@@ -1,3 +1,52 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
-iptables ipset libnet\-ipv6addr\-perl libnet\-patricia\-perl libregexp\-ipv6\-perl libjson\-perl
+.
+.TH "FEUERLAND" "1" "November 2015" "" ""
+.
+.SH "NAME"
+\fBfeuerland\fR \- Botnet Defense
+.
+.SH "DESCRIPTION"
+.
+.nf
+
+* Status: Proof of concept
+.
+.fi
+.
+.SH "INSTALLATION"
+.
+.nf
+
+* apt\-get install iptables ipset libnet\-ipv6addr\-perl libnet\-patricia\-perl libregexp\-ipv6\-perl libjson\-perl libnet\-ip\-perl
+* sudo make install # Just a bunch of copy statements
+.
+.fi
+.
+.P
+Or
+.
+.IP "" 4
+.
+.nf
+
+* make debian # This command creates an installable package for Debian
+* make ubuntu # This command creates an installable package for Ubuntu
+.
+.fi
+.
+.IP "" 0
+.
+.SH "USAGE"
+.
+.nf
+
+* Go to /etc/feuerland and copy one of the examples to /etc/feuerland/config\.json
+* Run `feuerland`\. The firewall script gets printed to stdout\.
+* Run `sudo feuerland | sudo bash` to install the script\.
+* Run `dmesg | feuerlog \-n` to see what is going on\.
+* Use `feuerland_iblocklist` and `feuerland_ipdeny` to download newer blocklists\.
+* Use `feuerlist \-\-target apache24 ipdeny/DE rfc1918 localhost` to create an Apache\-2\.4 ACL
+.
+.fi
+
