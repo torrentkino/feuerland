@@ -1,0 +1,7 @@
+debian/feuerland/
+debian/feuerland.debhelper.log
+debian/substvars
+debian/feuerland.postinst.debhelper
+debian/feuerland.postrm.debhelper
+debian/files
+debian/feuerland.substvars
