@@ -12,6 +12,7 @@ install:
 	mkdir -p $(DESTDIR)/etc/perl/feuerland
 	mkdir -p $(DESTDIR)/usr/share/feuerland
 	cp -f bin/feuerland $(DESTDIR)/usr/bin/feuerland
+	cp -f bin/feuerlist $(DESTDIR)/usr/bin/feuerlist
 	cp -f bin/feuerland_iblocklist $(DESTDIR)/usr/bin/feuerland_iblocklist
 	cp -f bin/feuerland_ipdeny $(DESTDIR)/usr/bin/feuerland_ipdeny
 	cp -f bin/feuerlog $(DESTDIR)/usr/bin/feuerlog
