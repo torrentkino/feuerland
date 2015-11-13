@@ -68,7 +68,7 @@ sub print_file($$$) {
 
 	my $file = $name.".json";
 
-	return if( -f $file );
+	#return if( -f $file );
 
 	open FH, '>', $file or die "$file: $!\n";
 	print FH $json;
