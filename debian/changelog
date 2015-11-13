@@ -1,8 +1,13 @@
+feuerland (0.3) jessie; urgency=low
+
+  * IPDENY updates
+
+ -- Aiko Barz <aiko@torrentkino.de>  Fri, 13 Nov 2015 10:03:00 +0100
 feuerland (0.2) jessie; urgency=low
 
   * feuerlist: Create Apache ACL lists
 
- -- Aiko Barz <aiko@torrentkino.de>  Thu, 26 Nov 2015 15:43:00 +0100
+ -- Aiko Barz <aiko@torrentkino.de>  Thu, 12 Nov 2015 15:43:00 +0100
 feuerland (0.1) jessie; urgency=low
 
   * Proof of concept
