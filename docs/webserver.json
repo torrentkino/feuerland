@@ -14,8 +14,11 @@
 					"policy": "deny",
 					"except": [ "rfc1918", "ipdeny/DE" ]
 				},
+				"80": {
+					"policy": "accept"
+				},
 				"443": {
-					"policy": "allow"
+					"policy": "accept"
 				}
 			}
 		}
