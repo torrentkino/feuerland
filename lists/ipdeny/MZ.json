@@ -27,6 +27,7 @@
    "2001:43f8:640::/48" : "MZ (IPdeny)",
    "2001:43f8:930::/48" : "MZ (IPdeny)",
    "2001:43f8:a40::/48" : "MZ (IPdeny)",
+   "2c0f:f308::/32" : "MZ (IPdeny)",
    "2c0f:f540::/32" : "MZ (IPdeny)",
    "2c0f:f5e0::/32" : "MZ (IPdeny)",
    "2c0f:f968::/32" : "MZ (IPdeny)",

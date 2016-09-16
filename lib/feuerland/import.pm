@@ -32,8 +32,7 @@ sub print_help_ipdeny($) {
 		print <<EOF
 $0 \\
 		-h => Help
-		-d XX => Download all networks of country XX and print them to stdout
-		-o => Write the list to the current workdir
+		-d => Download all countries to the current directory
 EOF
 ;
 		exit;
