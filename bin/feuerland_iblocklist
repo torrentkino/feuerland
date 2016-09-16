@@ -34,25 +34,28 @@ sub block_lists() {
 
 sub main {
 	local $/;
-	my ( $opt_list, $opt_help, $opt_file, $listname );
+	my ( $opt_list, $opt_help, $opt_file, $opt_load );
 	my $hint = block_lists();
 
 	GetOptions(
-		"d=s" => \$listname,
+		"d" => \$opt_load,
 		"h" => \$opt_help,
-		"l" => \$opt_list,
-		"o" => \$opt_file )
+		"l" => \$opt_list )
 	or die "Error in command line arguments\n";
 
 	feuerland::import::print_help_iblocklist( $opt_help );
 	feuerland::import::print_lists( $hint, $opt_list );
 
-	my $content = feuerland::import::download_iblocklist( $hint, $listname );
-	my $cidr = feuerland::import::cidr_converter( $content, $listname );
-	my $json = feuerland::import::json_converter( $cidr );
+	exit unless( defined $opt_load );
 
-	feuerland::import::print_stdout( $json, $opt_file );
-	feuerland::import::print_file( $json, $listname, $opt_file );
+	foreach my $list ( sort keys %{$hint} ) {
+		print "Load $list...\n";
+		my $content = feuerland::import::download_iblocklist( $hint, $list );
+		my $cidr = feuerland::import::cidr_converter( $content, $list );
+		my $json = feuerland::import::json_converter( $cidr );
+		#feuerland::import::print_stdout( $json, $opt_file );
+		feuerland::import::print_file( $json, $list );
+	}
 }
 
 main();

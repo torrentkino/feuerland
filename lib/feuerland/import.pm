@@ -12,14 +12,13 @@ use JSON;
 sub print_help_iblocklist($) {
 		my $opt_help = shift;
 
-		return unless( $opt_help );
+		return unless( defined $opt_help );
 
 		print <<EOF
 $0 \\
 		-h => Help
 		-l => List blocklists
-		-d => Download the blocklist and print it to stdout
-		-o => Write the blocklist to the current workdir
+		-d => Download the blocklist to the current directory
 EOF
 ;
 		exit;
@@ -59,13 +58,9 @@ sub print_stdout($$) {
 	print $json."\n";
 }
 
-sub print_file($$$) {
+sub print_file($$) {
 	my $json = shift;
 	my $name = shift;
-	my $opt_file = shift;
-
-	return unless( $opt_file );
-
 	my $file = $name.".json";
 
 	#return if( -f $file );
