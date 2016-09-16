@@ -11,7 +11,7 @@ sub lookup($$$) {
 	my $hostname = "unknown";
 
 	# No DNS lookups
-	return $input if( $opt_dns );
+	return $input unless( $opt_dns );
 
 	if ( $input !~ m/^\d+\.\d+\.\d+\.\d+$/ ) {
 		return $input;
@@ -232,8 +232,8 @@ sub print_result($$$$$) {
 sub print_help() {
 	print <<EOF
 $0 -h => Help
-$0 -n => No DNS lookups
-$0 -c number => Number of output lines (Per interface)
+$0 -l => DNS lookups
+$0 -n number => Number of output lines (Per interface)
 EOF
 ;
 	exit(0);
@@ -248,8 +248,8 @@ sub main {
 	my $help = '';
 
 	GetOptions(
-		"n" => \$opt_dns,
-		"c:i" => \$opt_count,
+		"l" => \$opt_dns,
+		"n:i" => \$opt_count,
 		"h" => \$help )
 	or die "Error in command line arguments\n";
 
