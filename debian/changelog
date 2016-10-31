@@ -3,7 +3,7 @@ feuerland (0.5) jessie; urgency=low
   * Reload IPDENY
   * Reload iblocklist
 
- -- Aiko Barz <aiko@torrentkino.de>  Mon, 31 Nov 2017 10:44:00 +0100
+ -- Aiko Barz <aiko@torrentkino.de>  Mon, 31 Oct 2017 10:44:00 +0100
 feuerland (0.4) jessie; urgency=low
 
   * feuerlog: More suitable option names
