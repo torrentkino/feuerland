@@ -6,3 +6,4 @@ debian/feuerland.postrm.debhelper
 debian/files
 debian/feuerland.substvars
 debian/debhelper-build-stamp
+debian/.debhelper/
