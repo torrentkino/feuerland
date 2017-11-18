@@ -10,82 +10,40 @@ sub ipv6_neighbourhood($) {
 
 	feuerland::misc::print( "Rule ICMPv6 Neighbourhood Discovery" );
 
-	$table = "INPUT_IPV6_NEIGHBOURHOOD";
-	@type = (
-		"neighbour-solicitation",
-		"neighbour-advertisement",
-		"router-advertisement" );
-
-	feuerland::misc::execute( $c, "-N $table" );
-	#feuerland::misc::execute( $c, "-A $table -j LOG --log-level info --log-prefix 'IPV6_ACCEPT '" );
-	foreach my $t ( @type ) {
-		feuerland::misc::execute( $c, "-A $table -p icmpv6 -m icmpv6 --icmpv6-type $t -j ACCEPT" );
-	}
-	feuerland::misc::execute( $c, "-A $table -j RETURN" );
-	feuerland::misc::execute( $c, "-A INPUT -p icmpv6 -m hl --hl-eq 255 -j $table" );
-
-	$table = "OUTPUT_IPV6_NEIGHBOURHOOD";
-	@type = (
-		"neighbour-advertisement",
-		"neighbour-solicitation",
-		"router-solicitation" );
-
-	feuerland::misc::execute( $c, "-N $table" );
-	#feuerland::misc::execute( $c, "-A $table -j LOG --log-level info --log-prefix 'IPV6_ACCEPT '" );
-	foreach my $t ( @type ) {
-		feuerland::misc::execute( $c, "-A $table -p icmpv6 -m icmpv6 --icmpv6-type $t -j ACCEPT" );
-	}
-	feuerland::misc::execute( $c, "-A $table -j RETURN" );
-	feuerland::misc::execute( $c, "-A OUTPUT -p icmpv6 -m hl --hl-eq 255 -j $table" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT icmpv6 type { nd-neighbor-advert, nd-neighbor-solicit, nd-router-advert} ip6 hoplimit 255 accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter OUTPUT icmpv6 type { nd-neighbor-advert, nd-neighbor-solicit, nd-router-advert} ip6 hoplimit 255 accept" );
 }
 
 sub ipv6_weird($) {
 	my $cmd = shift;
-	my $c = $cmd->{"fw"}->{'6'};
 
 	feuerland::misc::print( "Rule \"IPv6: No Next Header\" traffic with no payload" );
-	feuerland::misc::execute( $c, "-A INPUT -p ipv6-nonxt -m length --length 40 -j ACCEPT" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT meta l4proto ipv6-nonxt meta length 40 counter accept" );
 }
 
 sub established($) {
 	my $cmd = shift;
 	feuerland::misc::print( "Rule Established/Related" );
-	foreach my $version (keys %{ $cmd->{"fw"} } ) {
-		my $c = $cmd->{"fw"}->{$version};
-		feuerland::misc::execute( $c, "-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT" );
-		feuerland::misc::execute( $c, "-A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT" );
-	}
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter INPUT ct state related,established counter accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter OUTPUT ct state related,established counter accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT ct state related,established counter accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter OUTPUT ct state related,established counter accept" );
 }
 
 sub lo($) {
 	my $cmd = shift;
 	feuerland::misc::print( "Rule lo" );
-	foreach my $version (keys %{ $cmd->{"fw"} } ) {
-		my $c = $cmd->{"fw"}->{$version};
-		feuerland::misc::execute( $c, "-A INPUT -i lo -m conntrack --ctstate NEW -j ACCEPT" );
-		feuerland::misc::execute( $c, "-A OUTPUT -o lo -m conntrack --ctstate NEW -j ACCEPT" );
-	}
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter INPUT iifname lo ct state new counter accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter OUTPUT oifname lo ct state new counter accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT iifname lo ct state new counter accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter OUTPUT oifname lo ct state new counter accept" );
 }
 
 sub icmp($) {
 	my $cmd = shift;
-	my $var = "";
-
 	feuerland::misc::print( "Rule ICMP PING" );
-
-	$var = "";
-	$var .= "-A INPUT ";
-	$var .= "-p icmp -m icmp --icmp-type echo-request ";
-	$var .= "-m conntrack --ctstate NEW ";
-	$var .= "-j ACCEPT";
-	feuerland::misc::execute( $cmd->{"fw"}->{'4'}, $var );
-
-	$var = "";
-	$var .= "-A INPUT ";
-	$var .= "-p icmpv6 -m icmpv6 --icmpv6-type echo-request ";
-	$var .= "-m conntrack --ctstate NEW ";
-	$var .= "-j ACCEPT";
-	feuerland::misc::execute( $cmd->{"fw"}->{'6'}, $var );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter INPUT icmp type echo-request ct state new counter accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT meta l4proto ipv6-icmp icmpv6 type echo-request ct state new counter accept" );
 }
 
 sub mdns($) {
@@ -143,28 +101,11 @@ sub igmp($) {
 
 sub broadcast($) {
 	my $cmd = shift;
-	feuerland::misc::print( "Rule BROADCAST" );
-	my $c = $cmd->{"fw"}->{'4'};
-#	feuerland::misc::execute( $c, "-A INPUT -m pkttype --pkt-type broadcast -j ACCEPT" );
-#	feuerland::misc::execute( $c, "-A OUTPUT -m pkttype --pkt-type broadcast -j ACCEPT" );
-	feuerland::misc::execute( $c, "-A INPUT -m addrtype --dst-type BROADCAST -j ACCEPT" );
-	feuerland::misc::execute( $c, "-A OUTPUT -m addrtype --dst-type BROADCAST -j ACCEPT" );
-}
-
-sub multicast($) {
-	my $cmd = shift;
-	my @direction = ( "INPUT", "OUTPUT" );
-
-	feuerland::misc::print( "Rule MULTICAST" );
-
-	foreach my $version (keys %{ $cmd->{"fw"} } ) {
-		my $c = $cmd->{"fw"}->{$version};
-
-		foreach my $d ( @direction ) {
-			#feuerland::misc::execute( $c, "-A $d -m pkttype --pkt-type multicast -j MULTICAST" );
-			feuerland::misc::execute( $c, "-A $d -m addrtype --dst-type MULTICAST -j ACCEPT" );
-		}
-	}
+	feuerland::misc::print( "Rule Multicast/Broadcast" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT meta pkttype { multicast } accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter OUTPUT meta pkttype { multicast } accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter INPUT meta pkttype { broadcast, multicast } accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter OUTPUT meta pkttype { broadcast, multicast } accept" );
 }
 
 sub final($$$) {
@@ -182,21 +123,24 @@ sub final($$$) {
 		}
 	}
 
-	foreach my $version (keys %{ $exe->{"fw"} } ) {
-		my $c = $exe->{"fw"}->{$version};
+	if( feuerland::std::logging_enabled( $conf, $policy ) ) {
+		feuerland::misc::execute( $exe->{"nft"},
+			"add rule ip filter $target counter log prefix \\\"".uc($policy)." \\\" level info" );
+		feuerland::misc::execute( $exe->{"nft"},
+			"add rule ip6 filter $target counter log prefix \\\"".uc($policy)." \\\" level info" );
+	}
 
-		if( feuerland::std::logging_enabled( $conf, $policy ) ) {
-			feuerland::misc::execute( $c,
-				"-A $target -j LOG --log-level info --log-prefix '".uc($policy)." '" );
-		}
-
-		if( $policy eq "accept" ) {
-			feuerland::misc::execute( $c, "-A $target -m conntrack --ctstate NEW -j ACCEPT" );
-		} else {
-			feuerland::misc::execute( $c,
-				"-A $target -p tcp -m tcp -j REJECT --reject-with tcp-reset" );
-			feuerland::misc::execute( $c, "-A $target -j DROP" );
-		}
+	if( $policy eq "accept" ) {
+		feuerland::misc::execute( $exe->{"nft"}, "add rule ip filter $target ct state new counter accept" );
+		feuerland::misc::execute( $exe->{"nft"}, "add rule ip6 filter $target ct state new counter accept" );
+	} else {
+		#feuerland::misc::execute( $exe->{"nft"}, "add rule ip filter $target ip protocol udp reject" );
+		feuerland::misc::execute( $exe->{"nft"}, "add rule ip filter $target counter reject with tcp reset" );
+		feuerland::misc::execute( $exe->{"nft"}, "add rule ip filter $target counter reject with icmp type prot-unreachable" );
+		feuerland::misc::execute( $exe->{"nft"}, "add rule ip filter $target counter drop" );
+		feuerland::misc::execute( $exe->{"nft"}, "add rule ip6 filter $target counter reject with tcp reset" );
+		feuerland::misc::execute( $exe->{"nft"}, "add rule ip6 filter $target counter reject with icmpv6 type port-unreachable" );
+		feuerland::misc::execute( $exe->{"nft"}, "add rule ip6 filter $target counter drop" );
 	}
 }
 

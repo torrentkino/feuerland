@@ -24,56 +24,29 @@ sub policy($$$$) {
 	feuerland::misc::execute( $c, "-A $target -j DROP" );
 }
 
-sub reset_ipset($) {
+sub nft_init($) {
 	my $exe = shift;
-	feuerland::misc::print( "Cleanup ipset" );
-	feuerland::misc::execute( $exe->{"ips"}, "destroy" );
+	feuerland::misc::print( "Init nft" );
+	feuerland::misc::execute( $exe->{"nft"}, "add table ip filter" );
+	feuerland::misc::execute( $exe->{"nft"}, "add table ip6 filter" );
 }
 
-sub reset_chain($) {
+sub nft_policy($) {
 	my $exe = shift;
-	my $file = "/proc/net/ip_tables_names";
-	my @action = ( "-F", "-X", "-Z" );
-	my @chain = ( "OUTPUT", "INPUT", "FORWARD" );
+	feuerland::misc::print( "nft Policy" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter INPUT { type filter hook input priority 0\\; policy drop\\; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter FORWARD { type filter hook forward priority 0\\; policy drop\\; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter OUTPUT { type filter hook output priority 0\\; policy drop\\; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip6 filter INPUT { type filter hook input priority 0\\; policy drop\\; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip6 filter FORWARD { type filter hook forward priority 0\\; policy drop\\; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip6 filter OUTPUT { type filter hook output priority 0\\; policy drop\\; }" );
 
-	feuerland::misc::print( "Default Policy" );
-	foreach my $v ( 4, 6 ) {
-		foreach my $c ( @chain ) {
-			feuerland::misc::execute( $exe->{"fw"}->{$v}, "-P $c DROP" );
-		}
-	}
-
-	feuerland::std::reset_tables( $exe );
 }
 
-sub reset_tables($) {
+sub nft_reset($) {
 	my $exe = shift;
-	my $file = "/proc/net/ip_tables_names";
-	my @action = ( "-F", "-X", "-Z" );
-
-	feuerland::misc::print( "Cleanup default table" );
-	foreach my $v ( 4, 6 ) {
-		foreach my $a ( @action ) {
-			feuerland::misc::execute( $exe->{"fw"}->{$v}, $a );
-		}
-	}
-
-	return unless( -f $file );
-
-	feuerland::misc::print( "Cleanup other tables" );
-	open( FH, '<', $file )
-		or print "# $file : $! (sudo?)\n"
-		and return;
-	while( <FH> ) {
-		s/\n//;
-
-		foreach my $v ( 4, 6 ) {
-			foreach my $a ( @action ) {
-				feuerland::misc::execute( $exe->{"fw"}->{$v}, "-t $_ ".$a );
-			}
-		}
-	}
-	close FH;
+	feuerland::misc::print( "Cleanup nft" );
+	feuerland::misc::execute( $exe->{"nft"}, "flush ruleset" );
 }
 
 sub logging_enabled($$) {

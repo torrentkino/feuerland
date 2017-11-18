@@ -59,7 +59,7 @@ sub unique_id($$) {
 	my $counter = 0;
 
 	do {
-		$buffer = "";
+		$buffer = "L";
 		$buffer .= $chars[rand @chars] for 1..$size;
 
 		die "Number of chains exhausted\n" if( $counter++ > 100 );

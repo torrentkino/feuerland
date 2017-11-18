@@ -138,12 +138,12 @@ sub ipset_load($$) {
 					my ( $list4, $list6 ) = feuerland::misc::load_list( $conf, $name );
 
 					my %data4 = (
-						"id" => "4".$unique,
+						"id" => $unique."4",
 						"list" => $list4,
 					);
 
 					my %data6 = (
-						"id" => "6".$unique,
+						"id" => $unique."6",
 						"list" => $list6,
 					);
 
@@ -165,19 +165,18 @@ sub ipset_print($$) {
 	my $exe = shift;
 	my $ipset = shift;
 
-	feuerland::misc::print( "IPSET exception lists" );
+	feuerland::misc::print( "CIDR lists" );
 
 	foreach my $name ( sort keys %{ $ipset } ) {
 		foreach my $version ( sort keys %{ $ipset->{ $name } } ) {
 			my $data = $ipset->{ $name }->{ $version };
 			my $id = $data->{"id"};
 			my $list = $data->{"list"};
-			my $family = ( $version == 4 ) ? "inet" : "inet6";
+			my $family = ( $version == 4 ) ? "ipv4_addr" : "ipv6_addr";
 
-			feuerland::misc::execute( $exe->{"ips"}, "create $id hash:net family $family" );
-			foreach my $cidr ( @{ $list } ) {
-				feuerland::misc::execute( $exe->{"ips"}, "add $id $cidr" );
-			}
+			feuerland::misc::execute( $exe->{"nft"}, "add set filter $id { type $family\\; flags constant, interval\\;}" );
+			next if( scalar @{ $list } == 0 );
+			feuerland::misc::execute( $exe->{"nft"}, "add element filter $id { ".join( ',', @{ $list } )." }" );
 		}
 	}
 }
