@@ -26,6 +26,7 @@
    "2001:4340::/32" : "DZ (IPdeny)",
    "2001:43f8:1c0::/48" : "DZ (IPdeny)",
    "213.179.160.0/19" : "DZ (IPdeny)",
+   "2c0f:f000::/32" : "DZ (IPdeny)",
    "2c0f:f858::/32" : "DZ (IPdeny)",
    "2c0f:f940::/32" : "DZ (IPdeny)",
    "2c0f:fe50::/32" : "DZ (IPdeny)",
