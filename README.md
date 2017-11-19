@@ -11,7 +11,7 @@ feuerland(1) -- Botnet Defense
 
 ## INSTALLATION
 
-	* apt-get install iptables ipset libnet-ipv6addr-perl libnet-patricia-perl libregexp-ipv6-perl libjson-perl libnet-ip-perl
+	* apt-get install nftables libnet-ipv6addr-perl libnet-patricia-perl libregexp-ipv6-perl libjson-perl libnet-ip-perl
 	* sudo make install # Just a bunch of copy statements
 
 Or
