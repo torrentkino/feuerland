@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use Getopt::Long;
-use lib '/usr/share/perl5';
+use lib '/usr/lib';
 use feuerland::misc;
 use feuerland::std;
 

@@ -11,14 +11,13 @@ install:
 	mkdir -p $(DESTDIR)/etc/feuerland
 	mkdir -p $(DESTDIR)/etc/perl/feuerland
 	mkdir -p $(DESTDIR)/usr/share/feuerland
-	cp -f bin/feuerland $(DESTDIR)/usr/bin/feuerland
-	cp -f bin/feuerlist $(DESTDIR)/usr/bin/feuerlist
-	cp -f bin/feuerland_iblocklist $(DESTDIR)/usr/bin/feuerland_iblocklist
-	cp -f bin/feuerland_ipdeny $(DESTDIR)/usr/bin/feuerland_ipdeny
-	cp -f bin/feuerlog $(DESTDIR)/usr/bin/feuerlog
+	mkdir -p $(DESTDIR)/usr/lib/feuerland
+	cp -f perl/feuerland $(DESTDIR)/usr/bin/feuerland
+	cp -f perl/feuerlist $(DESTDIR)/usr/bin/feuerlist
+	cp -f perl/feuerlog $(DESTDIR)/usr/bin/feuerlog
 	cp -n docs/* $(DESTDIR)/etc/feuerland/
 	cp -rf lists/* $(DESTDIR)/usr/share/feuerland/
-	cp -rf lib/feuerland/* $(DESTDIR)/etc/perl/feuerland/
+	cp -rf lib/* $(DESTDIR)/usr/lib/feuerland/
 
 docs:
 	./bin/docs.sh
