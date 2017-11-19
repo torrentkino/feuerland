@@ -8,7 +8,7 @@ sub chain($$$$$) {
 	my $ipset = shift;
 	my $conf = shift;
 	my $id_cache = shift;
-	my $version = shift;
+	my $table = shift;
 	my $rules;
 
 	return unless( defined $conf->{"rules"} );
@@ -27,19 +27,19 @@ sub chain($$$$$) {
 				next unless( $policy =~ m/^(accept|deny)$/ );
 				my $chain1 = feuerland::misc::unique_id( $id_cache, 8 );
 
-				chain1_start( $exe, $conf, $chain1, $direction, $proto, $port, $policy, $version );
+				chain1_start( $exe, $conf, $chain1, $direction, $proto, $port, $policy, $table );
 
 				if( defined $rules->{$direction}->{$proto}->{$port}->{'except'} ) {
 					foreach my $name ( @{ $rules->{$direction}->{$proto}->{$port}->{'except'} } ) {
 						my $chain2 = feuerland::misc::unique_id( $id_cache, 8 );
 						chain2_start(
-							$exe, $conf, $ipset, $chain1, $chain2, $direction, $proto, $port, $policy, $version, $name );
+							$exe, $conf, $ipset, $chain1, $chain2, $direction, $proto, $port, $policy, $table, $name );
 						chain1_jump_chain2(
-							$exe, $ipset, $chain1, $chain2, $direction, $version, $name );
+							$exe, $ipset, $chain1, $chain2, $direction, $table, $name );
 					}
 				}
 
-				chain1_stop( $exe, $conf, $chain1, $direction, $proto, $port, $policy, $version );
+				chain1_stop( $exe, $conf, $chain1, $direction, $proto, $port, $policy, $table );
 			}
 		}
 	}
@@ -53,17 +53,12 @@ sub chain1_start($$$$$$$$) {
 	my $proto = shift;
 	my $port = shift;
 	my $policy = shift;
-	my $version = shift;
+	my $table = shift;
 
 	feuerland::misc::print(
 		"Rule ".uc($direction)." / ".uc($proto)." / $port / ".uc($policy) );
-	if ( $version == 4 ) {
-		feuerland::misc::execute( $exe->{"nft"},
-			"add chain ip filter $chain1" );
-	} else {
-		feuerland::misc::execute( $exe->{"nft"},
-			"add chain ip6 filter $chain1" );
-	}
+	feuerland::misc::execute( $exe->{"nft"},
+		"add chain $table filter $chain1" );
 }
 
 sub chain1_stop($$$$$$$$) {
@@ -74,19 +69,12 @@ sub chain1_stop($$$$$$$$) {
 	my $proto = shift;
 	my $port = shift;
 	my $policy = shift;
-	my $version = shift;
+	my $table = shift;
 
-	if( $version == 4 ) {
-		feuerland::std::logging( $conf, $exe, "ip", $chain1, $policy, undef );
-		feuerland::std::policy( $exe, "ip", $chain1, $policy, $proto );
-		feuerland::misc::execute( $exe->{"nft"},
-			"add rule ip filter ".uc($direction)." $proto dport $port ct state new counter jump $chain1" );
-	} else {
-		feuerland::std::logging( $conf, $exe, "ip6", $chain1, $policy, undef );
-		feuerland::std::policy( $exe, "ip6", $chain1, $policy, $proto );
-		feuerland::misc::execute( $exe->{"nft"},
-			"add rule ip6 filter ".uc($direction)." $proto dport $port ct state new counter jump $chain1" );
-	}
+	feuerland::std::logging( $conf, $exe, $table, $chain1, $policy, undef );
+	feuerland::std::policy( $exe, $table, $chain1, $policy, $proto );
+	feuerland::misc::execute( $exe->{"nft"},
+		"add rule $table filter ".uc($direction)." $proto dport $port ct state new counter jump $chain1" );
 }
 
 sub chain1_jump_chain2($$$$$$$) {
@@ -95,18 +83,13 @@ sub chain1_jump_chain2($$$$$$$) {
 	my $chain1 = shift;
 	my $chain2 = shift;
 	my $direction = shift;
-	my $version = shift;
+	my $table = shift;
 	my $name = shift;
 	my $match = ( $direction eq "input" ) ? "saddr" : "daddr";
-	my $list = $ipset->{ $name }->{ $version }->{ "id" };
+	my $list = $ipset->{ $name }->{ $table }->{ "id" };
 
-	if ( $version == 4 ) {
-		feuerland::misc::execute( $exe->{"nft"},
-			"add rule ip filter $chain1 ip $match \@$list jump $chain2" );
-	} else {
-		feuerland::misc::execute( $exe->{"nft"},
-			"add rule ip6 filter $chain1 ip6 $match \@$list jump $chain2" );
-	}
+	feuerland::misc::execute( $exe->{"nft"},
+		"add rule $table filter $chain1 $table $match \@$list jump $chain2" );
 }
 
 sub chain2_start($$$$$$$$$$$) {
@@ -119,23 +102,15 @@ sub chain2_start($$$$$$$$$$$) {
 	my $proto = shift;
 	my $port = shift;
 	my $policy = shift;
-	my $version = shift;
+	my $table = shift;
 	my $name = shift;
-	my $list = $ipset->{ $name }->{ $version }->{ "id" };
+	my $list = $ipset->{ $name }->{ $table }->{ "id" };
 	my $invert = ( $policy eq "accept" ) ? "deny" : "accept";
 
-	if ( $version == 4 ) {
-		feuerland::misc::execute( $exe->{"nft"},
-			"add chain ip filter $chain2" );
-		feuerland::std::logging( $conf, $exe,"ip", $chain2, $invert, $name );
-		feuerland::std::policy( $exe, "ip", $chain2, $invert, $proto );
-	} else {
-		feuerland::misc::execute( $exe->{"nft"},
-			"add chain ip6 filter $chain2" );
-		feuerland::std::logging( $conf, $exe,"ip6", $chain2, $invert, $name );
-		feuerland::std::policy( $exe, "ip6", $chain2, $invert, $proto );
-	}
-
+	feuerland::misc::execute( $exe->{"nft"},
+		"add chain $table filter $chain2" );
+	feuerland::std::logging( $conf, $exe, $table, $chain2, $invert, $name );
+	feuerland::std::policy( $exe, $table, $chain2, $invert, $proto );
 }
 
 sub ipset_load($$) {
@@ -173,12 +148,12 @@ sub ipset_load($$) {
 						"list" => $list6,
 					);
 
-					my %version = (
-						'4' => \%data4,
-						'6' => \%data6,
+					my %table = (
+						'ip' => \%data4,
+						'ip6' => \%data6,
 					);
 
-					$ipset{ $name } = \%version;
+					$ipset{ $name } = \%table;
 				}
 			}
 		}
@@ -194,12 +169,11 @@ sub ipset_print($$) {
 	feuerland::misc::print( "CIDR lists" );
 
 	foreach my $name ( sort keys %{ $ipset } ) {
-		foreach my $version ( sort keys %{ $ipset->{ $name } } ) {
-			my $data = $ipset->{ $name }->{ $version };
+		foreach my $table ( sort keys %{ $ipset->{ $name } } ) {
+			my $data = $ipset->{ $name }->{ $table };
 			my $id = $data->{"id"};
 			my $list = $data->{"list"};
-			my $family = ( $version == 4 ) ? "ipv4_addr" : "ipv6_addr";
-			my $table = ( $version == 4 ) ? "ip" : "ip6";
+			my $family = ( $table eq "ip" ) ? "ipv4_addr" : "ipv6_addr";
 
 			feuerland::misc::execute( $exe->{"nft"}, "add set $table filter $id { type $family\\; flags constant, interval\\;}" );
 			next if( scalar @{ $list } == 0 );

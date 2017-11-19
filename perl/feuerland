@@ -40,8 +40,8 @@ sub main() {
 	feuerland::simple::broadcast( \%exe );
 	feuerland::simple::ipv6_weird( \%exe );
 	feuerland::simple::icmp( \%exe );
-	feuerland::complex::chain( \%exe, $ipset, $conf, \%id_cache, 4 );
-	feuerland::complex::chain( \%exe, $ipset, $conf, \%id_cache, 6 );
+	feuerland::complex::chain( \%exe, $ipset, $conf, \%id_cache, "ip" );
+	feuerland::complex::chain( \%exe, $ipset, $conf, \%id_cache, "ip6" );
 	feuerland::simple::final( \%exe, $conf, "OUTPUT" );
 	feuerland::simple::final( \%exe, $conf, "INPUT" );
 }
