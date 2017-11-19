@@ -63,10 +63,11 @@ sub policy($$$$$) {
 	}
 
 	# Port unreachable
-	feuerland::misc::execute( $exe->{"nft"}, "add rule $table filter $target counter reject with icmp type port-unreachable" );
+	my $icmp_type = ( $table eq "ip6" ) ? "icmpv6" : "icmp";
+	feuerland::misc::execute( $exe->{"nft"}, "add rule $table filter $target counter reject with $icmp_type type port-unreachable" );
 
 	# Catchall
-	feuerland::misc::execute( $exe->{"nft"}, "add rule ip filter $target counter drop" );
+	feuerland::misc::execute( $exe->{"nft"}, "add rule $table filter $target counter drop" );
 }
 
 

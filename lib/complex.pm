@@ -57,7 +57,7 @@ sub chain1_start($$$$$$$$) {
 
 	feuerland::misc::print(
 		"Rule ".uc($direction)." / ".uc($proto)." / $port / ".uc($policy) );
-	if ( $version eq 4 ) {
+	if ( $version == 4 ) {
 		feuerland::misc::execute( $exe->{"nft"},
 			"add chain ip filter $chain1" );
 	} else {
@@ -76,7 +76,7 @@ sub chain1_stop($$$$$$$$) {
 	my $policy = shift;
 	my $version = shift;
 
-	if( $version eq 4 ) {
+	if( $version == 4 ) {
 		feuerland::std::logging( $conf, $exe, "ip", $chain1, $policy, undef );
 		feuerland::std::policy( $exe, "ip", $chain1, $policy, $proto );
 		feuerland::misc::execute( $exe->{"nft"},
@@ -100,7 +100,7 @@ sub chain1_jump_chain2($$$$$$$) {
 	my $match = ( $direction eq "input" ) ? "saddr" : "daddr";
 	my $list = $ipset->{ $name }->{ $version }->{ "id" };
 
-	if ( $version eq 4 ) {
+	if ( $version == 4 ) {
 		feuerland::misc::execute( $exe->{"nft"},
 			"add rule ip filter $chain1 ip $match \@$list jump $chain2" );
 	} else {
@@ -124,7 +124,7 @@ sub chain2_start($$$$$$$$$$$) {
 	my $list = $ipset->{ $name }->{ $version }->{ "id" };
 	my $invert = ( $policy eq "accept" ) ? "deny" : "accept";
 
-	if ( $version eq 4 ) {
+	if ( $version == 4 ) {
 		feuerland::misc::execute( $exe->{"nft"},
 			"add chain ip filter $chain2" );
 		feuerland::std::logging( $conf, $exe,"ip", $chain2, $invert, $name );
@@ -199,10 +199,11 @@ sub ipset_print($$) {
 			my $id = $data->{"id"};
 			my $list = $data->{"list"};
 			my $family = ( $version == 4 ) ? "ipv4_addr" : "ipv6_addr";
+			my $table = ( $version == 4 ) ? "ip" : "ip6";
 
-			feuerland::misc::execute( $exe->{"nft"}, "add set filter $id { type $family\\; flags constant, interval\\;}" );
+			feuerland::misc::execute( $exe->{"nft"}, "add set $table filter $id { type $family\\; flags constant, interval\\;}" );
 			next if( scalar @{ $list } == 0 );
-			feuerland::misc::execute( $exe->{"nft"}, "add element filter $id { ".join( ',', @{ $list } )." }" );
+			feuerland::misc::execute( $exe->{"nft"}, "add element $table filter $id { ".join( ',', @{ $list } )." }" );
 		}
 	}
 }
