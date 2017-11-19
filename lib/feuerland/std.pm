@@ -2,28 +2,6 @@ package feuerland::std;
 use warnings;
 use strict;
 
-sub policy($$$$) {
-	my $c = shift;
-	my $target = shift;
-	my $policy = shift;
-	my $proto = shift;
-
-	# ACCEPT
-	if( $policy eq "accept" ) {
-		feuerland::misc::execute( $c, "-A $target -j ACCEPT" );
-		return;
-	}
-
-	# REJECT TCP
-	if( $proto eq "tcp" ) {
-		my $reset = "-p tcp -m tcp -j REJECT --reject-with tcp-reset";
-		feuerland::misc::execute( $c, "-A $target $reset" );
-	}
-
-	# DROP ALL
-	feuerland::misc::execute( $c, "-A $target -j DROP" );
-}
-
 sub nft_init($) {
 	my $exe = shift;
 	feuerland::misc::print( "Init nft" );
@@ -66,9 +44,36 @@ sub logging_enabled($$) {
 	return 1;
 }
 
-sub logging($$$$$) {
+sub policy($$$$$) {
+	my $exe = shift;
+	my $table = shift;
+	my $target = shift;
+	my $policy = shift;
+	my $proto = shift;
+
+	# ACCEPT
+	if( $policy eq "accept" ) {
+		feuerland::misc::execute( $exe->{"nft"}, "add rule $table filter $target counter accept" );
+		return;
+	}
+
+	# REJECT TCP
+	if( $proto eq "tcp" ) {
+		feuerland::misc::execute( $exe->{"nft"}, "add rule $table filter $target counter reject with tcp reset" );
+	}
+
+	# Port unreachable
+	feuerland::misc::execute( $exe->{"nft"}, "add rule $table filter $target counter reject with icmp type port-unreachable" );
+
+	# Catchall
+	feuerland::misc::execute( $exe->{"nft"}, "add rule ip filter $target counter drop" );
+}
+
+
+sub logging($$$$$$) {
 	my $conf = shift;
-	my $c = shift;
+	my $exe = shift;
+	my $table = shift;
 	my $target = shift;
 	my $policy = shift;
 	my $list = shift;
@@ -92,7 +97,8 @@ sub logging($$$$$) {
 	# iptables has low limits
 	my $desc = substr $buffer, 0, 25;
 
-	feuerland::misc::execute( $c, "-A $target -j LOG --log-level info --log-prefix '$desc '" );
+	feuerland::misc::execute( $exe->{"nft"},
+		"add rule $table filter $target counter log prefix \\\"$desc \\\" level info" );
 }
 
 1;
