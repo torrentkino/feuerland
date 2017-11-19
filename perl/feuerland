@@ -19,9 +19,6 @@ sub main() {
 	my $file = "/etc/feuerland/config.json";
 	my %id_cache;
 
-	feuerland::misc::check_exe( $exe{'fw'}->{'4'} );
-	feuerland::misc::check_exe( $exe{'fw'}->{'6'} );
-	feuerland::misc::check_exe( $exe{'ips'} );
 	feuerland::misc::check_exe( $exe{'nft'} );
 
 	my $conf = feuerland::misc::load_json( $file );
