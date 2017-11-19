@@ -3,7 +3,11 @@ feuerland(1) -- Botnet Defense
 
 ## DESCRIPTION
 
+	* nftables filter
+	* Focus on servers and desktops
+	* Geo-IP blocking
 	* Status: Proof of concept
+	* Sources: http://ipdeny.com/ || https://www.iblocklist.com/
 
 ## INSTALLATION
 
