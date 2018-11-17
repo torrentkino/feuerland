@@ -57,10 +57,11 @@ sub print_stdout($$) {
 	print $json."\n";
 }
 
-sub print_file($$) {
+sub print_file($$$) {
 	my $json = shift;
 	my $name = shift;
-	my $file = $name.".json";
+	my $dir = shift;
+	my $file = $dir."/".$name.".json";
 
 	#return if( -f $file );
 

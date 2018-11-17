@@ -14,6 +14,7 @@
    "2001:43f8:290::/48" : "MG (IPdeny)",
    "2001:43f8:a10::/48" : "MG (IPdeny)",
    "2001:43f8:a11::/48" : "MG (IPdeny)",
+   "2c0f:f1c8::/32" : "MG (IPdeny)",
    "2c0f:f9f0::/32" : "MG (IPdeny)",
    "2c0f:fa28::/32" : "MG (IPdeny)",
    "41.188.0.0/18" : "MG (IPdeny)",

@@ -28,6 +28,12 @@ debian:
 ubuntu:
 	./bin/debian.sh
 
+ipdeny:
+	./bin/feuerland_ipdeny
+
+iblocklist:
+	./bin/feuerland_iblocklist
+
 clean:
 	for dir in $(SUBDIRS); do \
 		$(MAKE) clean -C $$dir; \
