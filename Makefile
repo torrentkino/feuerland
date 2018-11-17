@@ -32,7 +32,7 @@ ipdeny:
 	./bin/feuerland_ipdeny
 
 iblocklist:
-	./bin/feuerland_iblocklist
+	./bin/feuerland_iblocklist -d
 
 clean:
 	for dir in $(SUBDIRS); do \
