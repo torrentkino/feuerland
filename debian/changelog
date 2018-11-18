@@ -1,3 +1,9 @@
+feuerland (0.7) stretch; urgency=low
+
+  * Update: IPDENY
+  * Update: iblocklist
+
+ -- Aiko Barz <aiko@torrentkino.de>  Sat, 17 Nov 2018 21:27:00 +0100
 feuerland (0.6) jessie; urgency=low
 
   * Moved from iptables to nftables
