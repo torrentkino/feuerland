@@ -43,7 +43,7 @@ sub icmp($) {
 	my $cmd = shift;
 	feuerland::misc::print( "Rule ICMP PING" );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter INPUT icmp type echo-request ct state new counter accept" );
-	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT meta l4proto ipv6-icmp icmpv6 type echo-request ct state new counter accept" );
+	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT icmpv6 type echo-request ct state new counter accept" );
 }
 
 sub mdns($) {
