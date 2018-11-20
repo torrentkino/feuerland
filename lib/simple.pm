@@ -8,7 +8,7 @@ sub ipv6_neighbourhood($) {
 	my $table;
 	my @type;
 
-	feuerland::misc::print( "Rule ICMPv6 Neighbourhood Discovery" );
+	feuerland::misc::print( "Rule ICMPv6 Neighbourhood Discovery", 1, 1 );
 
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT icmpv6 type { nd-neighbor-advert, nd-neighbor-solicit, nd-router-advert} ip6 hoplimit 255 accept" );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter OUTPUT icmpv6 type { nd-neighbor-advert, nd-neighbor-solicit, nd-router-advert} ip6 hoplimit 255 accept" );
@@ -17,13 +17,13 @@ sub ipv6_neighbourhood($) {
 sub ipv6_weird($) {
 	my $cmd = shift;
 
-	feuerland::misc::print( "Rule \"IPv6: No Next Header\" traffic with no payload" );
+	feuerland::misc::print( "Rule \"IPv6: No Next Header\" traffic with no payload", 1, 1 );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT meta l4proto ipv6-nonxt meta length 40 counter accept" );
 }
 
 sub established($) {
 	my $cmd = shift;
-	feuerland::misc::print( "Rule Established/Related" );
+	feuerland::misc::print( "Rule Established/Related", 1, 1 );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter INPUT ct state related,established counter accept" );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter OUTPUT ct state related,established counter accept" );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT ct state related,established counter accept" );
@@ -32,7 +32,7 @@ sub established($) {
 
 sub lo($) {
 	my $cmd = shift;
-	feuerland::misc::print( "Rule lo" );
+	feuerland::misc::print( "Rule lo", 1, 1 );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter INPUT iifname lo ct state new counter accept" );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter OUTPUT oifname lo ct state new counter accept" );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT iifname lo ct state new counter accept" );
@@ -41,7 +41,7 @@ sub lo($) {
 
 sub icmp($) {
 	my $cmd = shift;
-	feuerland::misc::print( "Rule ICMP PING" );
+	feuerland::misc::print( "Rule ICMP PING", 1, 1 );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter INPUT icmp type echo-request ct state new counter accept" );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT icmpv6 type echo-request ct state new counter accept" );
 }
@@ -50,7 +50,7 @@ sub mdns($) {
 	my $cmd = shift;
 	my @direction = ( "INPUT", "OUTPUT" );
 
-	feuerland::misc::print( "Rule MDNS" );
+	feuerland::misc::print( "Rule MDNS", 1, 1 );
 
 	foreach my $version (keys %{ $cmd->{"fw"} } ) {
 		my $c = $cmd->{"fw"}->{$version};
@@ -69,7 +69,7 @@ sub mdns($) {
 
 sub ssdp($) {
 	my $cmd = shift;
-	feuerland::misc::print( "Rule SSDP" );
+	feuerland::misc::print( "Rule SSDP", 1, 1 );
 	my $c = $cmd->{"fw"}->{'4'};
 	feuerland::misc::execute( $c, "-N SSDP" );
 	feuerland::misc::execute( $c, "-A SSDP -j LOG --log-level info --log-prefix 'SSDP_ACCEPT '" );
@@ -79,7 +79,7 @@ sub ssdp($) {
 
 sub dhcp($) {
 	my $cmd = shift;
-	feuerland::misc::print( "Rule DHCP" );
+	feuerland::misc::print( "Rule DHCP", 1, 1 );
 	my $c = $cmd->{"fw"}->{'4'};
 	feuerland::misc::execute( $c, "-N DHCP" );
 	feuerland::misc::execute( $c, "-A DHCP -j LOG --log-level info --log-prefix 'DHCP_ACCEPT '" );
@@ -90,7 +90,7 @@ sub dhcp($) {
 
 sub igmp($) {
 	my $cmd = shift;
-	feuerland::misc::print( "Rule IGMP" );
+	feuerland::misc::print( "Rule IGMP", 1, 1 );
 	my $c = $cmd->{"fw"}->{'4'};
 	feuerland::misc::execute( $c, "-N IGMP" );
 	feuerland::misc::execute( $c, "-A IGMP -j LOG --log-level info --log-prefix 'IGMP_ACCEPT '" );
@@ -101,7 +101,7 @@ sub igmp($) {
 
 sub broadcast($) {
 	my $cmd = shift;
-	feuerland::misc::print( "Rule Multicast/Broadcast" );
+	feuerland::misc::print( "Rule Multicast/Broadcast", 1, 1 );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter INPUT meta pkttype { multicast } accept" );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip6 filter OUTPUT meta pkttype { multicast } accept" );
 	feuerland::misc::execute( $cmd->{"nft"}, "add rule ip filter INPUT meta pkttype { broadcast, multicast } accept" );
@@ -114,7 +114,7 @@ sub final($$$) {
 	my $target = shift;
 	my $policy = "deny";
 
-	feuerland::misc::print( "Rule $target" );
+	feuerland::misc::print( "Rule $target", 1, 1 );
 
 	# Policy: "accept" or "deny"?
 	if( defined $conf->{"policy"} ) {

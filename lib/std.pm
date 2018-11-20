@@ -2,16 +2,21 @@ package feuerland::std;
 use warnings;
 use strict;
 
+sub nft_header($) {
+	my $exe = shift;
+	feuerland::misc::print( "!".$exe->{"nft"}." -f", 0, 0 );
+}
+
 sub nft_init($) {
 	my $exe = shift;
-	feuerland::misc::print( "Init nft" );
+	feuerland::misc::print( "Init nft", 1, 1 );
 	feuerland::misc::execute( $exe->{"nft"}, "add table ip filter" );
 	feuerland::misc::execute( $exe->{"nft"}, "add table ip6 filter" );
 }
 
 sub nft_policy($) {
 	my $exe = shift;
-	feuerland::misc::print( "nft Policy" );
+	feuerland::misc::print( "nft Policy", 1, 1 );
 	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter INPUT { type filter hook input priority 0\\; policy drop\\; }" );
 	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter FORWARD { type filter hook forward priority 0\\; policy drop\\; }" );
 	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter OUTPUT { type filter hook output priority 0\\; policy drop\\; }" );
@@ -23,7 +28,7 @@ sub nft_policy($) {
 
 sub nft_reset($) {
 	my $exe = shift;
-	feuerland::misc::print( "Cleanup nft" );
+	feuerland::misc::print( "Cleanup nft", 1, 1 );
 	feuerland::misc::execute( $exe->{"nft"}, "flush ruleset" );
 }
 

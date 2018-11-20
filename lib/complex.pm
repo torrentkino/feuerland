@@ -56,7 +56,7 @@ sub chain1_start($$$$$$$$) {
 	my $table = shift;
 
 	feuerland::misc::print(
-		"Rule ".uc($direction)." / ".uc($proto)." / $port / ".uc($policy) );
+		"Rule ".uc($direction)." / ".uc($proto)." / $port / ".uc($policy), 1, 1 );
 	feuerland::misc::execute( $exe->{"nft"},
 		"add chain $table filter $chain1" );
 }
@@ -166,7 +166,7 @@ sub ipset_print($$) {
 	my $exe = shift;
 	my $ipset = shift;
 
-	feuerland::misc::print( "CIDR lists" );
+	feuerland::misc::print( "CIDR lists", 1, 1 );
 
 	foreach my $name ( sort keys %{ $ipset } ) {
 		foreach my $table ( sort keys %{ $ipset->{ $name } } ) {

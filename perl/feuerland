@@ -24,6 +24,7 @@ sub main() {
 	my $conf = feuerland::misc::load_json( $file );
 	my $interfaces = feuerland::misc::find_net_dev();
 
+	feuerland::std::nft_header( \%exe );
 	feuerland::std::nft_reset( \%exe );
 	feuerland::std::nft_init( \%exe );
 	feuerland::std::nft_policy( \%exe );

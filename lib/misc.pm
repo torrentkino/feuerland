@@ -7,15 +7,31 @@ use Net::CIDR::Lite;
 use Socket;
 use JSON;
 
-sub print($) {
+sub print($$$) {
 	my $words = shift;
-	print "\n# $words\n";
+	my $newlines = shift;
+	my $spaces = shift;
+
+	# Newlines
+	for (my $i = 0; $i < $newlines; $i++) {
+		print "\n";
+	}
+	print "#";
+
+	# Spaces
+	for (my $j = 0; $j < $spaces; $j++) {
+		print " ";
+	}
+
+	# Content
+	print "$words\n";
 }
 
 sub execute($$) {
 	my $exe = shift;
 	my $var = shift;
 	printf "%-15s %s\n", $exe, $var;
+	#printf "%s\n", $var;
 }
 
 sub check_exe($) {
