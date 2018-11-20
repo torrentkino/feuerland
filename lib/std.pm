@@ -17,12 +17,12 @@ sub nft_init($) {
 sub nft_policy($) {
 	my $exe = shift;
 	feuerland::misc::print( "nft Policy", 1, 1 );
-	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter INPUT { type filter hook input priority 0\\; policy drop\\; }" );
-	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter FORWARD { type filter hook forward priority 0\\; policy drop\\; }" );
-	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter OUTPUT { type filter hook output priority 0\\; policy drop\\; }" );
-	feuerland::misc::execute( $exe->{"nft"}, "add chain ip6 filter INPUT { type filter hook input priority 0\\; policy drop\\; }" );
-	feuerland::misc::execute( $exe->{"nft"}, "add chain ip6 filter FORWARD { type filter hook forward priority 0\\; policy drop\\; }" );
-	feuerland::misc::execute( $exe->{"nft"}, "add chain ip6 filter OUTPUT { type filter hook output priority 0\\; policy drop\\; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter INPUT { type filter hook input priority 0; policy drop; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter FORWARD { type filter hook forward priority 0; policy drop; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip filter OUTPUT { type filter hook output priority 0; policy drop; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip6 filter INPUT { type filter hook input priority 0; policy drop; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip6 filter FORWARD { type filter hook forward priority 0; policy drop; }" );
+	feuerland::misc::execute( $exe->{"nft"}, "add chain ip6 filter OUTPUT { type filter hook output priority 0; policy drop; }" );
 
 }
 
@@ -104,7 +104,7 @@ sub logging($$$$$$) {
 	my $desc = substr $buffer, 0, 25;
 
 	feuerland::misc::execute( $exe->{"nft"},
-		"add rule $table filter $target counter log prefix \\\"$desc \\\" level info" );
+		"add rule $table filter $target counter log prefix \"$desc \" level info" );
 }
 
 1;

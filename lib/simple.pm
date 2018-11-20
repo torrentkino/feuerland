@@ -125,9 +125,9 @@ sub final($$$) {
 
 	if( feuerland::std::logging_enabled( $conf, $policy ) ) {
 		feuerland::misc::execute( $exe->{"nft"},
-			"add rule ip filter $target counter log prefix \\\"".uc($policy)." \\\" level info" );
+			"add rule ip filter $target counter log prefix \"".uc($policy)." \" level info" );
 		feuerland::misc::execute( $exe->{"nft"},
-			"add rule ip6 filter $target counter log prefix \\\"".uc($policy)." \\\" level info" );
+			"add rule ip6 filter $target counter log prefix \"".uc($policy)." \" level info" );
 	}
 
 	if( $policy eq "accept" ) {

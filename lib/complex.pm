@@ -175,9 +175,24 @@ sub ipset_print($$) {
 			my $list = $data->{"list"};
 			my $family = ( $table eq "ip" ) ? "ipv4_addr" : "ipv6_addr";
 
-			feuerland::misc::execute( $exe->{"nft"}, "add set $table filter $id { type $family\\; flags constant, interval\\;}" );
+			feuerland::misc::execute( $exe->{"nft"}, "add set $table filter $id { type $family; flags constant, interval;}" );
 			next if( scalar @{ $list } == 0 );
-			feuerland::misc::execute( $exe->{"nft"}, "add element $table filter $id { ".join( ',', @{ $list } )." }" );
+
+			my @shortlist = ();
+			foreach my $net (sort @{ $list }) {
+				push @shortlist, $net;
+				next if ( scalar @shortlist < 4 );
+
+				# Put 4 elements into the result and empty the shortlist
+				feuerland::misc::execute( $exe->{"nft"}, "add element $table filter $id { ".join( ',', @shortlist )." }" );
+				@shortlist = ();
+				#feuerland::misc::execute( $exe->{"nft"}, "add element $table filter $id { $net }" );
+			}
+			# Flush the rest of the list
+			if ( scalar @shortlist != 0 ) {
+				feuerland::misc::execute( $exe->{"nft"}, "add element $table filter $id { ".join( ',', @shortlist )." }" );
+				@shortlist = ();
+			}
 		}
 	}
 }

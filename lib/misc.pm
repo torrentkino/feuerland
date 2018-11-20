@@ -30,8 +30,8 @@ sub print($$$) {
 sub execute($$) {
 	my $exe = shift;
 	my $var = shift;
-	printf "%-15s %s\n", $exe, $var;
-	#printf "%s\n", $var;
+	# printf "%-15s %s\n", $exe, $var;
+	printf "%s\n", $var;
 }
 
 sub check_exe($) {
