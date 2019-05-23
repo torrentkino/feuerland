@@ -1,3 +1,8 @@
+feuerland (1.0) stretch; urgency=low
+
+  * Update: IPDENY
+
+ -- Aiko Barz <aiko@torrentkino.de>  Thu, 23 May 2019 22:16:00 +0100
 feuerland (0.9) stretch; urgency=low
 
   * Atomic install (nft -f)
